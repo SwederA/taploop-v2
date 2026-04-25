@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "routes": [
-    { "src": "/go/([^/]+)", "dest": "/api/go/[id]?id=$1" },
-    { "src": "/claim", "dest": "/claim.html" },
-    { "src": "/update", "dest": "/update.html" },
-    { "src": "/", "dest": "/claim.html" }
-  ]
-}
