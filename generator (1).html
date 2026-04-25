@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TapLoop™ QR Batch Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --cream: #FAF7F2; --surface: #F5F0E8; --surface2: #EDE5D8;
+  --espresso: #2A1F1C; --gold: #8C6A2F; --muted-gold: #C9A96E;
+  --plum: #5C4D8A; --radius: 4px; --radius-lg: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--espresso);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 20px 40px;
+  border-bottom: 1px solid var(--muted-gold);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--cream);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.logo-wrap { display: flex; align-items: center; gap: 10px; }
+.logo-s { width: 30px; height: 30px; border: 1.5px solid var(--espresso); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: .9rem; font-weight: 700; }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 500; }
+.logo-name sup { font-family: 'Jost', sans-serif; font-size: .55rem; font-weight: 500; opacity: .5; vertical-align: super; }
+.header-tag { font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--muted-gold); padding: 5px 12px; border-radius: 2px; }
+
+/* ── MAIN ── */
+.main { max-width: 900px; margin: 0 auto; padding: 48px 40px; }
+
+.page-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 500; margin-bottom: 8px; letter-spacing: -.02em; }
+.page-title em { font-style: italic; color: var(--gold); }
+.page-sub { font-family: 'Jost', sans-serif; font-size: .9rem; font-weight: 400; color: var(--espresso); opacity: .6; margin-bottom: 40px; line-height: 1.6; }
+
+/* ── CONTROLS ── */
+.controls {
+  background: white;
+  border: 1px solid var(--muted-gold);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: end;
+}
+
+.control-group label {
+  font-family: 'Jost', sans-serif;
+  font-size: .68rem; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--espresso); display: block; margin-bottom: 8px;
+}
+
+.control-input {
+  width: 100%; padding: 11px 14px;
+  background: var(--surface); border: 1px solid var(--muted-gold);
+  border-radius: var(--radius); font-family: 'Jost', sans-serif;
+  font-size: .95rem; font-weight: 400; color: var(--espresso);
+  outline: none; transition: border .2s;
+}
+
+.control-input:focus { border-color: var(--espresso); }
+
+select.control-input { cursor: pointer; }
+
+.btn-generate {
+  width: 100%; padding: 13px;
+  background: var(--espresso); color: var(--cream);
+  border: none; border-radius: var(--radius);
+  font-family: 'Jost', sans-serif;
+  font-size: .78rem; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s;
+}
+
+.btn-generate:hover { background: var(--gold); }
+.btn-generate:active { transform: scale(.98); }
+.btn-generate:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--muted-gold);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-wrap.show { display: flex; }
+
+.progress-bar-wrap {
+  flex: 1; background: var(--surface2);
+  border-radius: 20px; height: 6px; overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%; background: var(--espresso);
+  border-radius: 20px; transition: width .3s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-family: 'Jost', sans-serif;
+  font-size: .78rem; font-weight: 500;
+  color: var(--espresso); white-space: nowrap;
+  min-width: 80px; text-align: right;
+}
+
+/* ── ACTIONS BAR ── */
+.actions-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--muted-gold);
+  border-radius: var(--radius-lg);
+}
+
+.actions-bar.show { display: flex; }
+
+.batch-info { font-family: 'Jost', sans-serif; font-size: .85rem; font-weight: 500; color: var(--espresso); }
+.batch-info span { color: var(--gold); }
+
+.action-buttons { display: flex; gap: 10px; }
+
+.btn-action {
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-family: 'Jost', sans-serif;
+  font-size: .75rem; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s; border: none;
+}
+
+.btn-print { background: var(--espresso); color: var(--cream); }
+.btn-print:hover { background: var(--gold); }
+.btn-download-all { background: white; color: var(--espresso); border: 1px solid var(--muted-gold); }
+.btn-download-all:hover { border-color: var(--espresso); }
+.btn-save { background: var(--plum); color: white; }
+.btn-save:hover { opacity: .9; }
+.btn-save:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── QR GRID ── */
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.qr-card {
+  background: white;
+  border: 1px solid var(--muted-gold);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: border-color .2s;
+  position: relative;
+}
+
+.qr-card:hover { border-color: var(--espresso); }
+
+.qr-canvas-wrap {
+  width: 120px; height: 120px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.qr-id {
+  font-family: 'Jost', sans-serif;
+  font-size: .75rem; font-weight: 600;
+  letter-spacing: .12em; color: var(--espresso);
+  text-align: center;
+}
+
+.qr-url {
+  font-family: 'Jost', sans-serif;
+  font-size: .6rem; font-weight: 400;
+  color: var(--espresso); opacity: .4;
+  text-align: center; word-break: break-all;
+  line-height: 1.4;
+}
+
+.btn-dl-single {
+  width: 100%;
+  padding: 7px;
+  background: var(--surface);
+  border: 1px solid var(--muted-gold);
+  border-radius: var(--radius);
+  font-family: 'Jost', sans-serif;
+  font-size: .65rem; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase;
+  cursor: pointer; transition: all .2s; color: var(--espresso);
+}
+
+.btn-dl-single:hover { background: var(--espresso); color: var(--cream); border-color: var(--espresso); }
+
+.saved-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--espresso); color: var(--cream);
+  font-family: 'Jost', sans-serif;
+  font-size: .55rem; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 2px;
+  display: none;
+}
+
+.qr-card.saved .saved-badge { display: block; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  body { background: white; }
+  .header, .main > *:not(.print-sheet) { display: none !important; }
+  .print-sheet { display: block !important; }
+}
+
+.print-sheet {
+  display: none;
+  padding: 20px;
+}
+
+.print-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.print-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 0.5px solid #ccc;
+}
+
+.print-id {
+  font-family: 'Courier New', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--espresso);
+  opacity: .4;
+}
+
+.empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.empty-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 500; margin-bottom: 8px; }
+.empty-sub { font-family: 'Jost', sans-serif; font-size: .85rem; }
+
+/* Save status */
+.save-status {
+  display: none;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-family: 'Jost', sans-serif;
+  font-size: .82rem; font-weight: 400;
+  margin-bottom: 16px;
+}
+.save-status.success { display: block; background: var(--surface); border: 1px solid var(--muted-gold); color: var(--espresso); }
+.save-status.error { display: block; background: #fdf0ef; border: 1px solid #e8c4c0; color: #8b3a35; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo-wrap">
+    <div class="logo-s">S</div>
+    <div>
+      <div class="logo-name">TapLoop<sup>™</sup></div>
+    </div>
+  </div>
+  <div class="header-tag">QR Batch Generator</div>
+</header>
+
+<div class="main">
+  <h1 class="page-title">Generate your<br><em>keychain batch.</em></h1>
+  <p class="page-sub">Create unique QR codes for each keychain in your batch. Download individually for laser engraving or as a print sheet for package inserts.</p>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="control-group">
+      <label>Batch Size</label>
+      <input type="number" class="control-input" id="batch-size" min="1" max="100" value="20" placeholder="e.g. 20">
+    </div>
+    <div class="control-group">
+      <label>QR Size</label>
+      <select class="control-input" id="qr-size">
+        <option value="128">Small (½ inch)</option>
+        <option value="160" selected>Medium (¾ inch)</option>
+        <option value="200">Large (1 inch)</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Generate</label>
+      <button class="btn-generate" id="btn-generate" onclick="generateBatch()">Generate Batch →</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-text" id="progress-text">0 / 0</div>
+  </div>
+
+  <!-- SAVE STATUS -->
+  <div class="save-status" id="save-status"></div>
+
+  <!-- ACTIONS BAR -->
+  <div class="actions-bar" id="actions-bar">
+    <div class="batch-info">
+      <span id="batch-count">0</span> keychains ready —
+      <span id="batch-date"></span>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-action btn-save" id="btn-save" onclick="saveBatchToSupabase()">💾 Save to Database</button>
+      <button class="btn-action btn-download-all" onclick="downloadAll()">⬇ Download All PNGs</button>
+      <button class="btn-action btn-print" onclick="printSheet()">🖨 Print Sheet</button>
+    </div>
+  </div>
+
+  <!-- QR GRID -->
+  <div class="qr-grid" id="qr-grid">
+    <div class="empty-state">
+      <div class="empty-icon">⬡</div>
+      <div class="empty-title">No batch generated yet</div>
+      <div class="empty-sub">Set your batch size above and click Generate</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- HIDDEN PRINT SHEET -->
+<div class="print-sheet" id="print-sheet">
+  <div class="print-grid" id="print-grid"></div>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://odtsrlchpzcjfndhpxhr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-186bC8jlgQuhOhD7tdvlw_SgxBMyJo';
+const BASE_URL          = 'https://taploop.net/go/';
+
+let currentBatch = [];
+
+// ── GENERATE ID ──
+function generateId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  return 'TL-' + rand;
+}
+
+// Ensure unique IDs in batch
+function generateUniqueBatch(size) {
+  const ids = new Set();
+  while (ids.size < size) ids.add(generateId());
+  return Array.from(ids);
+}
+
+// ── GENERATE BATCH ──
+async function generateBatch() {
+  const size = Math.min(100, Math.max(1, parseInt(document.getElementById('batch-size').value) || 20));
+  const qrSize = parseInt(document.getElementById('qr-size').value);
+  const btn = document.getElementById('btn-generate');
+
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+
+  // Reset
+  currentBatch = [];
+  document.getElementById('qr-grid').innerHTML = '';
+  document.getElementById('actions-bar').classList.remove('show');
+  document.getElementById('save-status').style.display = 'none';
+
+  // Show progress
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressBar  = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  progressWrap.classList.add('show');
+
+  const ids = generateUniqueBatch(size);
+  const grid = document.getElementById('qr-grid');
+
+  for (let i = 0; i < ids.length; i++) {
+    const id  = ids[i];
+    const url = BASE_URL + id;
+
+    // Create card
+    const card = document.createElement('div');
+    card.className = 'qr-card';
+    card.id = `card-${id}`;
+
+    const savedBadge = document.createElement('div');
+    savedBadge.className = 'saved-badge';
+    savedBadge.textContent = 'Saved';
+    card.appendChild(savedBadge);
+
+    const qrWrap = document.createElement('div');
+    qrWrap.className = 'qr-canvas-wrap';
+    qrWrap.id = `qr-${id}`;
+    card.appendChild(qrWrap);
+
+    const idLabel = document.createElement('div');
+    idLabel.className = 'qr-id';
+    idLabel.textContent = id;
+    card.appendChild(idLabel);
+
+    const urlLabel = document.createElement('div');
+    urlLabel.className = 'qr-url';
+    urlLabel.textContent = url;
+    card.appendChild(urlLabel);
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn-dl-single';
+    dlBtn.textContent = '⬇ Download PNG';
+    dlBtn.onclick = () => downloadSingle(id);
+    card.appendChild(dlBtn);
+
+    grid.appendChild(card);
+
+    // Generate QR
+    await new Promise(resolve => {
+      new QRCode(qrWrap, {
+        text: url,
+        width: qrSize,
+        height: qrSize,
+        colorDark: '#2A1F1C',
+        colorLight: '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      setTimeout(resolve, 30);
+    });
+
+    currentBatch.push({ id, url });
+
+    // Update progress
+    const pct = Math.round(((i+1)/size)*100);
+    progressBar.style.width = pct + '%';
+    progressText.textContent = `${i+1} / ${size}`;
+  }
+
+  // Done
+  progressWrap.classList.remove('show');
+  btn.disabled = false;
+  btn.textContent = 'Generate Batch →';
+
+  document.getElementById('batch-count').textContent = size;
+  document.getElementById('batch-date').textContent = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('actions-bar').classList.add('show');
+  document.getElementById('btn-save').disabled = false;
+  document.getElementById('btn-save').textContent = '💾 Save to Database';
+
+  buildPrintSheet();
+}
+
+// ── DOWNLOAD SINGLE ──
+function downloadSingle(id) {
+  const card = document.getElementById(`card-${id}`);
+  const canvas = card.querySelector('canvas');
+  if (!canvas) { alert('QR not ready yet'); return; }
+
+  // Create a new canvas with ID label below
+  const size = canvas.width;
+  const padding = 12;
+  const labelH = 28;
+  const out = document.createElement('canvas');
+  out.width  = size + padding * 2;
+  out.height = size + padding * 2 + labelH;
+  const ctx = out.getContext('2d');
+
+  // White background
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, out.width, out.height);
+
+  // QR code
+  ctx.drawImage(canvas, padding, padding, size, size);
+
+  // ID label
+  ctx.fillStyle = '#2A1F1C';
+  ctx.font = `600 13px 'Courier New', monospace`;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '2px';
+  ctx.fillText(id, out.width / 2, size + padding * 2 + 16);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = `taploop-${id}.png`;
+  link.href = out.toDataURL('image/png');
+  link.click();
+}
+
+// ── DOWNLOAD ALL ──
+async function downloadAll() {
+  if (!currentBatch.length) return;
+
+  const btn = document.querySelector('.btn-download-all');
+  btn.textContent = '⏳ Preparing…';
+  btn.disabled = true;
+
+  for (let i = 0; i < currentBatch.length; i++) {
+    await new Promise(r => setTimeout(r, 80));
+    downloadSingle(currentBatch[i].id);
+  }
+
+  btn.textContent = '⬇ Download All PNGs';
+  btn.disabled = false;
+}
+
+// ── PRINT SHEET ──
+function buildPrintSheet() {
+  const printGrid = document.getElementById('print-grid');
+  printGrid.innerHTML = '';
+
+  currentBatch.forEach(({ id }) => {
+    const card = document.getElementById(`card-${id}`);
+    const canvas = card?.querySelector('canvas');
+    if (!canvas) return;
+
+    const item = document.createElement('div');
+    item.className = 'print-item';
+
+    const img = document.createElement('img');
+    img.src = canvas.toDataURL();
+    img.style.cssText = 'width:80px;height:80px;display:block;';
+    item.appendChild(img);
+
+    const label = document.createElement('div');
+    label.className = 'print-id';
+    label.textContent = id;
+    item.appendChild(label);
+
+    printGrid.appendChild(item);
+  });
+}
+
+function printSheet() {
+  if (!currentBatch.length) return;
+  buildPrintSheet();
+  document.getElementById('print-sheet').style.display = 'block';
+
+  // Hide everything except print sheet
+  document.querySelectorAll('.main > *').forEach(el => el.style.display = 'none');
+  document.querySelector('.header').style.display = 'none';
+
+  window.print();
+
+  // Restore
+  document.querySelectorAll('.main > *').forEach(el => el.style.display = '');
+  document.querySelector('.header').style.display = '';
+  document.getElementById('print-sheet').style.display = 'none';
+
+  // Re-show actions bar
+  document.getElementById('actions-bar').classList.add('show');
+  document.getElementById('qr-grid').style.display = 'grid';
+}
+
+// ── SAVE TO SUPABASE ──
+async function saveBatchToSupabase() {
+  if (!currentBatch.length) return;
+
+  const btn = document.getElementById('btn-save');
+  const status = document.getElementById('save-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+  status.style.display = 'none';
+
+  const rows = currentBatch.map(({ id, url }) => ({
+    id,
+    destination_url: null,
+    owner_email: null,
+    platform_type: null,
+    is_claimed: false,
+    created_at: new Date().toISOString()
+  }));
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/keychains`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(rows)
+    });
+
+    if (res.ok || res.status === 201) {
+      // Mark all cards as saved
+      currentBatch.forEach(({ id }) => {
+        document.getElementById(`card-${id}`)?.classList.add('saved');
+      });
+      status.textContent = `✓ ${currentBatch.length} keychains saved to database — ready to ship!`;
+      status.className = 'save-status success';
+      btn.textContent = '✓ Saved';
+    } else {
+      const err = await res.json();
+      if (err.code === '23505') {
+        status.textContent = 'Some IDs already exist in the database. Generate a new batch.';
+      } else {
+        status.textContent = 'Save failed. Check your connection and try again.';
+      }
+      status.className = 'save-status error';
+      btn.disabled = false;
+      btn.textContent = '💾 Save to Database';
+    }
+  } catch(e) {
+    status.textContent = 'Connection error. Make sure you\'re on taploop.net and try again.';
+    status.className = 'save-status error';
+    btn.disabled = false;
+    btn.textContent = '💾 Save to Database';
+  }
+}
+</script>
+</body>
+</html>
