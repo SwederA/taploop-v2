@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TapLoop™ Kiosk</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TapLoop">
+<meta name="theme-color" content="#FAF7F2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:      #FAF7F2;
+  --surface:    #F5F0E8;
+  --surface2:   #EDE5D8;
+  --espresso:   #2A1F1C;
+  --gold:       #8C6A2F;
+  --muted-gold: #C9A96E;
+  --plum:       #5C4D8A;
+  --radius:     4px;
+  --radius-lg:  12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--espresso);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; width: 100%; max-width: 420px; animation: fadeIn .3s ease; }
+.screen.active { display: flex; flex-direction: column; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── TYPOGRAPHY ── */
+.logo-wrap { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 4px; }
+.logo-s { width: 28px; height: 28px; border: 1.5px solid var(--espresso); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: .85rem; font-weight: 700; color: var(--espresso); flex-shrink: 0; }
+.logo-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 500; color: var(--espresso); letter-spacing: .02em; }
+.logo-name sup { font-family: 'Jost', sans-serif; font-size: .55rem; font-weight: 500; letter-spacing: .1em; vertical-align: super; opacity: .6; }
+.logo-sub { font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--espresso); opacity: .45; text-align: center; margin-bottom: 28px; }
+
+.screen-eyebrow { font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--espresso); opacity: .5; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.screen-eyebrow::before { content: ''; display: block; width: 18px; height: 1px; background: var(--muted-gold); }
+.screen-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 500; line-height: 1.2; color: var(--espresso); margin-bottom: 8px; letter-spacing: -.01em; }
+.screen-title em { font-style: italic; color: var(--gold); }
+.screen-sub { font-family: 'Jost', sans-serif; font-size: .85rem; font-weight: 400; color: var(--espresso); opacity: .6; line-height: 1.65; margin-bottom: 24px; }
+
+/* ── PROGRESS DOTS ── */
+.steps { display: flex; gap: 6px; justify-content: center; margin-bottom: 28px; }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-gold); transition: all .3s; }
+.step-dot.active { background: var(--espresso); width: 20px; border-radius: 3px; }
+.step-dot.done { background: var(--gold); }
+
+/* ── BUTTONS ── */
+.btn { width: 100%; padding: 15px; border-radius: var(--radius); border: none; font-family: 'Jost', sans-serif; font-size: .8rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; transition: all .2s; margin-top: 8px; }
+.btn-primary { background: var(--espresso); color: var(--cream); }
+.btn-primary:hover { background: var(--gold); }
+.btn-primary:active { transform: scale(.97); }
+.btn-ghost { background: transparent; color: var(--espresso); opacity: .5; border: 1px solid var(--muted-gold); }
+.btn-ghost:hover { opacity: .8; border-color: var(--espresso); }
+.btn-outline { background: transparent; color: var(--espresso); border: 1.5px solid var(--espresso); }
+.btn-outline:hover { background: var(--espresso); color: var(--cream); }
+.btn-qr { background: var(--espresso); color: var(--cream); }
+.back-btn { background: none; border: none; font-family: 'Jost', sans-serif; font-size: .75rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--espresso); opacity: .45; cursor: pointer; padding: 8px 0; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; width: auto; margin-top: 0; }
+.back-btn:hover { opacity: .8; }
+
+/* ── MODE ROW ── */
+.mode-row { display: flex; gap: 10px; }
+.mode-row .btn { flex: 1; margin-top: 0; }
+
+/* ── INPUTS ── */
+.input-group { margin-bottom: 16px; }
+.input-label { font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--espresso); margin-bottom: 8px; display: block; }
+.input-wrap { display: flex; align-items: stretch; background: white; border: 1px solid var(--muted-gold); border-radius: var(--radius); overflow: hidden; transition: border .2s; }
+.input-wrap:focus-within { border-color: var(--espresso); }
+.input-prefix { padding: 13px 12px; color: var(--gold); font-family: 'Jost', sans-serif; font-size: .8rem; white-space: nowrap; border-right: 1px solid var(--muted-gold); background: var(--surface); font-weight: 400; flex-shrink: 0; display: flex; align-items: center; }
+.input-field { flex: 1; padding: 13px 14px; background: transparent; border: none; color: var(--espresso); font-family: 'Jost', sans-serif; font-size: .95rem; font-weight: 400; outline: none; min-width: 0; }
+.input-field::placeholder { color: var(--muted-gold); }
+.input-hint { font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 400; color: var(--espresso); opacity: .45; margin-top: 5px; }
+.plain-input { width: 100%; padding: 13px 14px; background: white; border: 1px solid var(--muted-gold); border-radius: var(--radius); color: var(--espresso); font-family: 'Jost', sans-serif; font-size: .95rem; font-weight: 400; outline: none; transition: border .2s; }
+.plain-input:focus { border-color: var(--espresso); }
+.plain-input::placeholder { color: var(--muted-gold); }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--muted-gold); margin: 4px 0 20px; }
+
+/* ── SETUP TOGGLES ── */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid var(--muted-gold); border-radius: var(--radius); padding: 13px 14px; margin-bottom: 8px; }
+.toggle-label { font-family: 'Jost', sans-serif; font-size: .85rem; font-weight: 500; color: var(--espresso); }
+.toggle-sub { font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 400; color: var(--espresso); opacity: .5; margin-top: 2px; }
+.toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: var(--muted-gold); border-radius: 22px; cursor: pointer; transition: .3s; }
+.toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+input:checked + .toggle-slider { background: var(--espresso); }
+input:checked + .toggle-slider:before { transform: translateX(18px); }
+.sub-toggle { margin-left: 14px; border-left: 2px solid var(--muted-gold); border-radius: 0 var(--radius) var(--radius) 0; }
+
+/* ── PLATFORM GRID ── */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.type-card { background: white; border: 1px solid var(--muted-gold); border-radius: var(--radius); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all .2s; text-align: center; }
+.type-card:hover, .type-card.selected { border-color: var(--espresso); background: var(--surface); }
+.type-card.selected { background: var(--espresso); }
+.type-card.selected .label { color: var(--cream); }
+.type-card.selected .desc { color: var(--cream); opacity: .6; }
+.type-card.selected .icon { filter: grayscale(1) brightness(10); }
+.type-card .icon { font-size: 1.5rem; }
+.type-card .label { font-family: 'Jost', sans-serif; font-size: .78rem; font-weight: 500; color: var(--espresso); letter-spacing: .04em; }
+.type-card .desc { font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 400; color: var(--espresso); opacity: .5; }
+
+/* ── CONFIRM CARD ── */
+.confirm-card { background: var(--surface); border: 1px solid var(--muted-gold); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; }
+.confirm-row { display: flex; align-items: center; gap: 12px; }
+.confirm-icon { font-size: 1.8rem; }
+.confirm-type { font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--espresso); opacity: .5; margin-bottom: 3px; }
+.confirm-dest { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 500; color: var(--espresso); word-break: break-all; }
+.confirm-url { font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 400; color: var(--gold); margin-top: 4px; word-break: break-all; }
+
+/* ── TAP SCREEN ── */
+.tap-ring { width: 150px; height: 150px; border-radius: 50%; border: 2px solid var(--espresso); margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; position: relative; animation: pulse 2s infinite; }
+.tap-ring::before { content: ''; position: absolute; inset: -16px; border-radius: 50%; border: 1px solid var(--muted-gold); animation: pulse 2s infinite .4s; }
+.tap-ring::after { content: ''; position: absolute; inset: -32px; border-radius: 50%; border: 1px solid rgba(201,169,110,.35); animation: pulse 2s infinite .8s; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.55;transform:scale(1.03)} }
+.tap-inner { font-size: 2.8rem; }
+.tap-instruction { text-align: center; font-family: 'Jost', sans-serif; font-size: .85rem; font-weight: 400; color: var(--espresso); opacity: .6; line-height: 1.65; margin-bottom: 24px; }
+.nfc-badge { font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; text-align: center; padding: 7px 14px; border-radius: 20px; margin-bottom: 20px; background: var(--surface); color: var(--espresso); opacity: .6; border: 1px solid var(--muted-gold); }
+.nfc-badge.live { background: var(--espresso); color: var(--cream); opacity: 1; border-color: var(--espresso); }
+
+/* ── SUCCESS ── */
+.success-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--espresso); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 20px; animation: popIn .4s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.success-tip { background: var(--surface); border: 1px solid var(--muted-gold); border-radius: var(--radius-lg); padding: 14px 16px; font-family: 'Jost', sans-serif; font-size: .82rem; font-weight: 400; color: var(--espresso); opacity: .75; margin: 12px 0 16px; line-height: 1.6; }
+.success-tip strong { opacity: 1; font-weight: 500; color: var(--espresso); }
+.reset-countdown { text-align: center; font-family: 'Jost', sans-serif; font-size: .82rem; font-weight: 400; color: var(--espresso); opacity: .5; margin-top: 8px; display: none; }
+.reset-countdown span { color: var(--espresso); font-weight: 700; opacity: 1; }
+
+/* ── DUAL BADGE ── */
+.dual-badge { display: flex; gap: 8px; margin-bottom: 16px; justify-content: center; }
+.badge-pill { padding: 5px 12px; border-radius: 20px; font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 500; letter-spacing: .06em; border: 1px solid var(--muted-gold); background: var(--surface); color: var(--espresso); opacity: .6; }
+.badge-pill.active { background: var(--espresso); color: var(--cream); border-color: var(--espresso); opacity: 1; }
+
+/* ── COUNTER ── */
+.counter-badge { display: none; background: var(--surface); border: 1px solid var(--muted-gold); border-radius: 20px; padding: 6px 14px; font-family: 'Jost', sans-serif; font-size: .75rem; font-weight: 500; color: var(--espresso); text-align: center; margin-bottom: 16px; letter-spacing: .06em; }
+.counter-badge.on { display: block; }
+
+/* ── KIOSK BAR ── */
+.kiosk-bar { display: none; position: fixed; top: 0; left: 0; right: 0; background: var(--espresso); color: var(--cream); padding: 10px 18px; font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; align-items: center; justify-content: space-between; z-index: 100; }
+.kiosk-bar.on { display: flex; }
+.kiosk-exit { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: var(--cream); padding: 4px 12px; border-radius: 2px; font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.kiosk-exit:hover { background: rgba(255,255,255,.25); }
+body.kiosk { padding-top: 50px; }
+body.kiosk .back-btn:not(.show-in-kiosk) { display: none !important; }
+
+/* ── LOG ── */
+.log-list { list-style: none; max-height: 260px; overflow-y: auto; margin-bottom: 16px; }
+.log-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--muted-gold); font-size: .82rem; }
+.log-item:last-child { border-bottom: none; }
+.log-num { background: var(--surface); color: var(--espresso); font-family: 'Jost', sans-serif; font-weight: 500; font-size: .68rem; letter-spacing: .08em; padding: 3px 8px; border-radius: 2px; border: 1px solid var(--muted-gold); flex-shrink: 0; }
+.log-info { flex: 1; overflow: hidden; }
+.log-dest { font-family: 'Jost', sans-serif; font-weight: 500; font-size: .82rem; color: var(--espresso); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log-type { font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 400; color: var(--espresso); opacity: .5; margin-top: 2px; }
+.log-empty { text-align: center; font-family: 'Jost', sans-serif; font-size: .85rem; color: var(--espresso); opacity: .4; padding: 24px 0; }
+
+/* ── STATS ── */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat-card { background: var(--surface); border: 1px solid var(--muted-gold); border-radius: var(--radius-lg); padding: 14px; text-align: center; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 500; color: var(--espresso); }
+.stat-label { font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--espresso); opacity: .45; margin-top: 4px; }
+.summary-section { font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--espresso); opacity: .4; margin: 16px 0 10px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bar-icon { font-size: 1rem; width: 22px; text-align: center; }
+.bar-label { font-family: 'Jost', sans-serif; font-size: .8rem; font-weight: 500; width: 86px; flex-shrink: 0; color: var(--espresso); }
+.bar-wrap { flex: 1; background: var(--surface); border-radius: 20px; height: 6px; overflow: hidden; border: 1px solid var(--muted-gold); }
+.bar-fill { display: block; height: 100%; background: var(--espresso); border-radius: 20px; }
+.bar-count { font-family: 'Jost', sans-serif; font-size: .8rem; font-weight: 500; color: var(--espresso); width: 18px; text-align: right; }
+.chip { background: var(--surface); color: var(--espresso); border: 1px solid var(--muted-gold); border-radius: 2px; padding: 4px 12px; font-family: 'Jost', sans-serif; font-size: .7rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; display: inline-block; margin-bottom: 16px; }
+
+/* ── PIN MODAL ── */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(42,31,28,.6); z-index: 200; align-items: center; justify-content: center; padding: 24px; }
+.modal-bg.on { display: flex; }
+.modal-box { background: var(--cream); border: 1px solid var(--muted-gold); border-radius: var(--radius-lg); padding: 28px 24px; width: 100%; max-width: 320px; text-align: center; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 500; margin-bottom: 6px; color: var(--espresso); }
+.modal-sub { font-family: 'Jost', sans-serif; font-size: .82rem; font-weight: 400; color: var(--espresso); opacity: .55; margin-bottom: 18px; }
+.pin-input { width: 100%; padding: 14px; text-align: center; font-size: 1.5rem; font-weight: 500; letter-spacing: 8px; background: white; border: 1px solid var(--muted-gold); border-radius: var(--radius); color: var(--espresso); outline: none; margin-bottom: 6px; font-family: 'Jost', sans-serif; }
+.pin-input:focus { border-color: var(--espresso); }
+.pin-err { font-family: 'Jost', sans-serif; font-size: .78rem; color: #8b3a35; min-height: 18px; margin-bottom: 10px; }
+.modal-btns { display: flex; gap: 10px; }
+.modal-btns .btn { flex: 1; margin-top: 0; }
+
+/* ── V2 TAG ── */
+.v2-tag { display: inline-block; background: var(--espresso); color: var(--cream); font-family: 'Jost', sans-serif; font-size: .55rem; font-weight: 500; padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: middle; letter-spacing: .08em; text-transform: uppercase; }
+
+/* ── QR CLAIM ── */
+.qr-id-display { background: var(--surface); border: 1px dashed var(--muted-gold); border-radius: var(--radius); padding: 12px 16px; text-align: center; margin-bottom: 16px; }
+.qr-id-label { font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--espresso); opacity: .5; margin-bottom: 4px; }
+.qr-id-value { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 500; color: var(--espresso); letter-spacing: .1em; }
+/* ── QR SCANNER ── */
+.scanner-wrap {
+  position: relative; width: 100%; border-radius: var(--radius-lg);
+  overflow: hidden; background: var(--espresso);
+  aspect-ratio: 1 / 1; max-height: 300px;
+}
+
+#scanner-video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.scanner-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+
+.scanner-frame {
+  width: 180px; height: 180px; position: relative;
+}
+
+.corner {
+  position: absolute; width: 22px; height: 22px;
+  border-color: var(--cream); border-style: solid;
+}
+.corner.tl { top:0; left:0; border-width: 3px 0 0 3px; }
+.corner.tr { top:0; right:0; border-width: 3px 3px 0 0; }
+.corner.bl { bottom:0; left:0; border-width: 0 0 3px 3px; }
+.corner.br { bottom:0; right:0; border-width: 0 3px 3px 0; }
+
+.scanner-line {
+  position: absolute; left: 8px; right: 8px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--muted-gold), transparent);
+  animation: scanLine 2s ease-in-out infinite;
+  top: 0;
+}
+
+@keyframes scanLine {
+  0%   { top: 8px; opacity: 1; }
+  50%  { top: calc(100% - 8px); opacity: 1; }
+  100% { top: 8px; opacity: 1; }
+}
+
+.scanner-hint {
+  font-family: 'Jost', sans-serif; font-size: .72rem; font-weight: 400;
+  color: rgba(250,247,242,.7); text-align: center; letter-spacing: .04em;
+  padding: 0 20px;
+}
+
+/* Scanned result badge */
+.scanned-badge {
+  background: var(--surface); border: 1px solid var(--muted-gold);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; gap: 12px;
+}
+
+.scanned-badge-label {
+  font-family: 'Jost', sans-serif; font-size: .65rem; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--espresso); opacity: .5; margin-bottom: 4px;
+}
+
+.scanned-badge-id {
+  font-family: 'Playfair Display', serif; font-size: 1.2rem;
+  font-weight: 500; color: var(--espresso); letter-spacing: .1em;
+}
+
+.scanned-rescan {
+  background: none; border: 1px solid var(--muted-gold);
+  border-radius: var(--radius); padding: 6px 12px;
+  font-family: 'Jost', sans-serif; font-size: .68rem; font-weight: 500;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--espresso); opacity: .6; cursor: pointer; flex-shrink: 0;
+}
+
+.scanned-rescan:hover { opacity: 1; border-color: var(--espresso); }
+</style>
+</head>
+<body>
+
+<!-- PIN MODAL -->
+<div class="modal-bg" id="pin-modal">
+  <div class="modal-box">
+    <div class="modal-title">Operator PIN</div>
+    <p class="modal-sub">Enter your PIN to exit kiosk mode.</p>
+    <input class="pin-input" id="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+    <div class="pin-err" id="pin-err"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitPin()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- KIOSK BAR -->
+<div class="kiosk-bar" id="kiosk-bar">
+  <span id="kiosk-name">TapLoop Activation</span>
+  <button class="kiosk-exit" onclick="openPinModal()">Exit Kiosk</button>
+</div>
+
+<!-- WELCOME -->
+<div class="screen active" id="s-welcome">
+  <div class="logo-wrap">
+    <div class="logo-s">S</div>
+    <span class="logo-name">TapLoop<sup>™</sup> <span class="v2-tag">V2</span></span>
+  </div>
+  <div class="logo-sub">by Sweder Design Co.</div>
+  <div class="screen-eyebrow" style="justify-content:center">NFC + QR, fully activated</div>
+  <h1 class="screen-title" style="text-align:center;font-size:2rem;margin-bottom:12px">Make your first <em>connection.</em></h1>
+  <p class="screen-sub" style="text-align:center">Program your NFC chip and claim your QR code in one go — tap or scan, always works.</p>
+  <div class="mode-row">
+    <button class="btn btn-primary" onclick="startGuestFlow()">Get Started →</button>
+    <button class="btn btn-outline" onclick="goSetup()">⚙ Operator</button>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+  <button class="back-btn" onclick="go('s-welcome')">← Back</button>
+  <div class="screen-eyebrow">Operator</div>
+  <div class="screen-title">Event setup</div>
+  <p class="screen-sub">Configure this station for your event.</p>
+  <div class="input-group">
+    <label class="input-label">Event Name</label>
+    <input class="plain-input" id="setup-name" placeholder="e.g. Boston Networking Night 2026" type="text">
+  </div>
+  <div class="input-group">
+    <label class="input-label">Operator PIN <span style="font-weight:300;opacity:.5;text-transform:none;letter-spacing:0">(to exit kiosk)</span></label>
+    <input class="plain-input" id="setup-pin" placeholder="e.g. 1234" type="number">
+  </div>
+  <div class="divider"></div>
+  <div class="toggle-row">
+    <div><div class="toggle-label">Auto-reset after each guest</div><div class="toggle-sub">Returns to start screen automatically</div></div>
+    <label class="toggle"><input type="checkbox" id="tog-reset" checked><div class="toggle-slider"></div></label>
+  </div>
+  <div class="toggle-row">
+    <div><div class="toggle-label">Show programming log</div><div class="toggle-sub">Track keychains programmed today</div></div>
+    <label class="toggle"><input type="checkbox" id="tog-log" checked><div class="toggle-slider"></div></label>
+  </div>
+  <div class="toggle-row">
+    <div><div class="toggle-label">Collect name & email</div><div class="toggle-sub">Ask each guest before programming</div></div>
+    <label class="toggle"><input type="checkbox" id="tog-collect" checked><div class="toggle-slider"></div></label>
+  </div>
+  <div class="toggle-row sub-toggle" id="row-require-email">
+    <div><div class="toggle-label" style="font-size:.82rem">Require email to continue</div><div class="toggle-sub">Guest cannot skip email field</div></div>
+    <label class="toggle"><input type="checkbox" id="tog-require-email"><div class="toggle-slider"></div></label>
+  </div>
+  <div class="toggle-row">
+    <div><div class="toggle-label">Enable QR claim step</div><div class="toggle-sub">Offer QR registration after NFC write</div></div>
+    <label class="toggle"><input type="checkbox" id="tog-qr" checked><div class="toggle-slider"></div></label>
+  </div>
+  <button class="btn btn-primary" onclick="launchKiosk()">Launch Kiosk →</button>
+  <button class="btn btn-ghost" onclick="go('s-welcome')">Cancel</button>
+</div>
+
+<!-- GUEST INFO -->
+<div class="screen" id="s-guest-info">
+  <div class="steps"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+  <div class="screen-eyebrow">Step 1 of 4</div>
+  <div class="screen-title">Let's get started.</div>
+  <p class="screen-sub">We'll use this to send you a link to update your TapLoop anytime.</p>
+  <div class="input-group">
+    <label class="input-label">First & Last Name <span style="font-weight:300;opacity:.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+    <input class="plain-input" id="guest-name" type="text" placeholder="Jane Smith">
+  </div>
+  <div class="input-group">
+    <label class="input-label">Email Address *</label>
+    <input class="plain-input" id="guest-email" type="email" placeholder="jane@example.com">
+    <div class="input-hint" style="margin-top:5px">📬 You'll receive a link to update your destination anytime.</div>
+  </div>
+  <button class="btn btn-primary" onclick="captureGuest()">Continue →</button>
+</div>
+
+<!-- CHOOSE PLATFORM -->
+<div class="screen" id="s-choose">
+  <div class="steps"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+  <div class="counter-badge" id="counter-badge">Programmed today: <span id="counter-num">0</span></div>
+  <div class="screen-eyebrow">Step 2 of 5</div>
+  <div class="screen-title">What should your<br>TapLoop <em>open?</em></div>
+  <p class="screen-sub">Pick where your keychain takes people.</p>
+  <div class="type-grid">
+    <div class="type-card" onclick="pickType(this,'LinkedIn','linkedin','💼')"><div class="icon">💼</div><div class="label">LinkedIn</div><div class="desc">Profile page</div></div>
+    <div class="type-card" onclick="pickType(this,'Instagram','instagram','📸')"><div class="icon">📸</div><div class="label">Instagram</div><div class="desc">Profile page</div></div>
+    <div class="type-card" onclick="pickType(this,'TikTok','tiktok','🎵')"><div class="icon">🎵</div><div class="label">TikTok</div><div class="desc">Profile page</div></div>
+    <div class="type-card" onclick="pickType(this,'X / Twitter','twitter','𝕏')"><div class="icon">𝕏</div><div class="label">X / Twitter</div><div class="desc">Profile page</div></div>
+    <div class="type-card" onclick="pickType(this,'Facebook','facebook','📘')"><div class="icon">📘</div><div class="label">Facebook</div><div class="desc">Profile or page</div></div>
+    <div class="type-card" onclick="pickType(this,'YouTube','youtube','▶')"><div class="icon">▶</div><div class="label">YouTube</div><div class="desc">Channel page</div></div>
+    <div class="type-card" onclick="pickType(this,'Spotify','spotify','🎧')"><div class="icon">🎧</div><div class="label">Spotify</div><div class="desc">Profile page</div></div>
+    <div class="type-card" onclick="pickType(this,'Venmo','venmo','💸')"><div class="icon">💸</div><div class="label">Venmo</div><div class="desc">Payment page</div></div>
+    <div class="type-card" onclick="pickType(this,'Website','website','🌐')"><div class="icon">🌐</div><div class="label">Website</div><div class="desc">Any URL</div></div>
+    <div class="type-card" onclick="pickType(this,'Booking','booking','📅')"><div class="icon">📅</div><div class="label">Booking</div><div class="desc">Schedule a meeting</div></div>
+    <div class="type-card" onclick="pickType(this,'Custom','custom','✦')"><div class="icon">✦</div><div class="label">Custom</div><div class="desc">Anything else</div></div>
+  </div>
+  <button class="btn btn-primary" id="btn-to-enter" style="display:none" onclick="go('s-enter')">Continue →</button>
+  <button class="btn btn-ghost" id="btn-view-log" style="display:none" onclick="go('s-log')">View Log</button>
+</div>
+
+<!-- ENTER DESTINATION -->
+<div class="screen" id="s-enter">
+  <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+  <button class="back-btn show-in-kiosk" onclick="go('s-choose')">← Change platform</button>
+  <div class="screen-eyebrow">Step 3 of 4</div>
+  <div class="screen-title" id="enter-title">Enter your username</div>
+  <p class="screen-sub" id="enter-sub">Just your username — we'll build the link for you.</p>
+  <div class="input-group">
+    <label class="input-label" id="enter-label">Username</label>
+    <div class="input-wrap">
+      <div class="input-prefix" id="enter-prefix">linkedin.com/in/</div>
+      <input class="input-field" id="dest-input" type="text" placeholder="yourname">
+    </div>
+    <div class="input-hint" id="enter-hint"></div>
+  </div>
+  <button class="btn btn-primary" onclick="goConfirm()">Review My TapLoop →</button>
+</div>
+
+<!-- CONFIRM -->
+<div class="screen" id="s-confirm">
+  <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div></div>
+  <button class="back-btn" onclick="go('s-enter')">← Back</button>
+  <div class="screen-eyebrow">Step 4 of 4</div>
+  <div class="screen-title">Looks good?</div>
+  <p class="screen-sub">This is what your TapLoop will open when tapped or scanned.</p>
+  <div class="confirm-card">
+    <div class="confirm-row">
+      <div class="confirm-icon" id="c-icon">🔗</div>
+      <div>
+        <div class="confirm-type" id="c-type"></div>
+        <div class="confirm-dest" id="c-dest"></div>
+        <div class="confirm-url" id="c-url"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="startTap()">Program My TapLoop →</button>
+  <button class="btn btn-ghost" onclick="go('s-enter')">Edit</button>
+</div>
+
+<!-- PRE-TAP QR SCAN -->
+<div class="screen" id="s-qr-claim-pre">
+  <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+  <button class="back-btn show-in-kiosk" onclick="go('s-confirm')">← Back</button>
+  <div class="screen-eyebrow">Step 4 of 5</div>
+  <div class="screen-title">Scan the<br>keychain QR.</div>
+  <p class="screen-sub">Point the camera at the QR code on the keychain. This links the chip and QR together permanently.</p>
+
+  <!-- SCANNER -->
+  <div id="pre-scanner-section">
+    <div class="scanner-wrap">
+      <video id="pre-scanner-video" autoplay playsinline muted></video>
+      <div class="scanner-overlay">
+        <div class="scanner-frame">
+          <span class="corner tl"></span><span class="corner tr"></span>
+          <span class="corner bl"></span><span class="corner br"></span>
+          <div class="scanner-line"></div>
+        </div>
+        <p class="scanner-hint">Point camera at the QR code on the keychain</p>
+      </div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:12px" onclick="stopPreScanner();showPreManual()">Enter ID manually instead</button>
+  </div>
+
+  <!-- SCANNED RESULT -->
+  <div id="pre-scanned-result" style="display:none">
+    <div class="scanned-badge">
+      <div>
+        <div class="scanned-badge-label">Keychain ready</div>
+        <div class="scanned-badge-id" id="pre-scanned-id">—</div>
+      </div>
+      <button class="scanned-rescan" onclick="resetPreScanner()">Scan again</button>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="stopPreScanner();startTap()">Program NFC Chip →</button>
+  </div>
+
+  <!-- MANUAL FALLBACK -->
+  <div id="pre-manual-entry" style="display:none">
+    <div class="input-group">
+      <label class="input-label">Keychain ID</label>
+      <div class="input-wrap">
+        <div class="input-prefix">TL —</div>
+        <input class="input-field" id="pre-id-input" type="text" placeholder="A3X9K2" maxlength="8" style="text-transform:uppercase;letter-spacing:.1em;font-weight:500">
+      </div>
+      <div class="input-hint">Find this on your keychain QR tag.</div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmPreManual()">Continue to Program →</button>
+    <button class="btn btn-ghost" onclick="hidePreManual();startPreScanner()">Use camera instead</button>
+  </div>
+</div>
+
+<!-- TAP -->
+<div class="screen" id="s-tap">
+  <div class="steps"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div></div>
+  <div class="screen-title" style="text-align:center;margin-bottom:6px">Tap your keychain.</div>
+  <p class="screen-sub" style="text-align:center">Hold the TapLoop flat against the back of the tablet to program it.</p>
+  <div class="nfc-badge" id="nfc-badge">Demo mode — tap button to simulate</div>
+  <div class="tap-ring"><div class="tap-inner">📱</div></div>
+  <p class="tap-instruction" id="tap-msg">Hold the keychain steady against<br>the back of the device and keep it still.</p>
+  <button class="btn btn-primary" id="btn-tap" onclick="doTap()">Tap to Program</button>
+  <button class="btn btn-ghost" onclick="go('s-confirm')">← Go back</button>
+</div>
+
+<!-- SUCCESS -->
+<div class="screen" id="s-success">
+  <div class="success-ring">✓</div>
+  <div class="screen-title" style="text-align:center;margin-bottom:6px">All done.</div>
+  <p class="screen-sub" style="text-align:center;margin-bottom:12px">Keychain programmed and registered. Check your email for your update link.</p>
+  <div class="dual-badge">
+    <span class="badge-pill active">✓ NFC Ready</span>
+    <span class="badge-pill active" id="qr-status-badge">✓ Active</span>
+  </div>
+  <div class="confirm-card">
+    <div class="confirm-row">
+      <div class="confirm-icon" id="s-icon">🔗</div>
+      <div>
+        <div class="confirm-type" id="s-type"></div>
+        <div class="confirm-dest" id="s-dest"></div>
+        <div class="confirm-url" id="s-url"></div>
+      </div>
+    </div>
+  </div>
+  <div id="qr-claim-section" style="display:none"></div>
+  <div id="qr-claimed-section">
+    <div class="success-tip"><strong>📬 Check your email</strong> — we sent your personal update link so you can change your destination anytime.</div>
+    <div class="reset-countdown" id="countdown">Resetting in <span id="cd-num">5</span>s…</div>
+    <button class="btn btn-primary" onclick="nextGuest()">Next Guest →</button>
+    <button class="btn btn-ghost" id="btn-log-success" style="display:none" onclick="go('s-log')">View Log</button>
+  </div>
+  <div id="qr-skipped-section" style="display:none">
+    <button class="btn btn-ghost" id="btn-log-success2" style="display:none" onclick="go('s-log')">View Log</button>
+  </div>
+</div>
+
+<!-- QR CLAIM -->
+<div class="screen" id="s-qr-claim">
+  <button class="back-btn show-in-kiosk" onclick="go('s-success')">← Back</button>
+  <div class="screen-eyebrow">Almost done</div>
+  <div class="screen-title">One last step.</div>
+  <p class="screen-sub">Enter your email so we can send you a link to update your destination anytime — no account needed.</p>
+
+  <div class="scanned-badge" style="margin-bottom:20px">
+    <div>
+      <div class="scanned-badge-label">Keychain registered</div>
+      <div class="scanned-badge-id" id="qr-claim-id-display">—</div>
+    </div>
+    <span style="font-size:1.4rem">✓</span>
+  </div>
+
+  <div class="input-group">
+    <label class="input-label">Your email</label>
+    <input class="plain-input" id="qr-email" type="email" placeholder="you@example.com">
+    <div class="input-hint" style="margin-top:5px">📬 We'll send a magic link so you can update your QR destination anytime.</div>
+  </div>
+
+  <button class="btn btn-primary" id="btn-register-qr" onclick="registerQR()">Send My Update Link →</button>
+  <button class="btn btn-ghost" onclick="stopScanner();skipQR()">Skip for now</button>
+  <div id="qr-register-status" style="display:none;text-align:center;padding:14px;font-family:'Jost',sans-serif;font-size:.85rem;color:var(--espresso);opacity:.6"></div>
+</div>
+
+<!-- LOG -->
+<div class="screen" id="s-log">
+  <div class="screen-title">Programming Log</div>
+  <p class="screen-sub" id="log-sub">Session</p>
+  <ul class="log-list" id="log-list"><li class="log-empty">No keychains programmed yet.</li></ul>
+  <button class="btn btn-primary" onclick="go('s-choose')">Program Next Guest →</button>
+  <button class="btn btn-ghost" onclick="openPinModal()">Exit Kiosk</button>
+</div>
+
+<!-- SUMMARY -->
+<div class="screen" id="s-summary">
+  <div class="logo-wrap" style="margin-bottom:16px">
+    <div class="logo-s">S</div>
+    <span class="logo-name">TapLoop<sup>™</sup></span>
+  </div>
+  <div class="screen-title">Session Summary</div>
+  <div class="chip" id="sum-event">Event</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="sum-total">0</div><div class="stat-label">Keychains</div></div>
+    <div class="stat-card"><div class="stat-num" id="sum-qr">0</div><div class="stat-label">QR Claimed</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:1rem;padding-top:6px" id="sum-top">—</div><div class="stat-label">Top Platform</div></div>
+    <div class="stat-card"><div class="stat-num" id="sum-dur">—</div><div class="stat-label">Duration</div></div>
+  </div>
+  <div class="summary-section">Platform Breakdown</div>
+  <div id="sum-breakdown"></div>
+  <div class="summary-section">Full Log</div>
+  <ul class="log-list" id="sum-log" style="max-height:180px"></ul>
+  <button class="btn btn-primary" style="margin-top:8px" onclick="clearKiosk()">End Session & Return Home</button>
+</div>
+
+<script>
+const SUPABASE_URL      = 'https://odtsrlchpzcjfndhpxhr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-186bC8jlgQuhOhD7tdvlw_SgxBMyJo';
+
+const TYPES = {
+  linkedin:  { base:'https://linkedin.com/in/',       prefix:'linkedin.com/in/',   label:'Username', hint:'e.g. johndoe', social:true },
+  instagram: { base:'https://instagram.com/',         prefix:'instagram.com/',     label:'Username', hint:'e.g. johndoe', social:true },
+  tiktok:    { base:'https://tiktok.com/@',           prefix:'tiktok.com/@',       label:'Username', hint:'e.g. johndoe', social:true },
+  twitter:   { base:'https://x.com/',                 prefix:'x.com/',             label:'Username', hint:'e.g. johndoe', social:true },
+  facebook:  { base:'https://facebook.com/',          prefix:'facebook.com/',      label:'Username or Page', hint:'e.g. yourpagename', social:true },
+  youtube:   { base:'https://youtube.com/@',          prefix:'youtube.com/@',      label:'Channel Handle', hint:'e.g. yourchannel', social:true },
+  spotify:   { base:'https://open.spotify.com/user/', prefix:'spotify.com/user/',  label:'Spotify Username', hint:'e.g. yourname', social:true },
+  venmo:     { base:'https://venmo.com/',             prefix:'venmo.com/',         label:'Venmo Username', hint:'e.g. johndoe', social:true },
+  website:   { base:'https://',                       prefix:'https://',           label:'Website URL', hint:'e.g. yourwebsite.com', social:false },
+  booking:   { base:'https://',                       prefix:'https://',           label:'Booking URL', hint:'e.g. calendly.com/yourname', social:false },
+  custom:    { base:'https://',                       prefix:'https://',           label:'Full URL', hint:'e.g. yourlink.com/page', social:false },
+};
+
+let sel   = { type:'', key:'', icon:'', input:'', url:'' };
+let guest = { name:'', email:'' };
+let kiosk = { on:false, pin:'', name:'', autoReset:true, showLog:true, collectInfo:true, requireEmail:false, enableQR:true, log:[], timer:null, sessionStart:null };
+
+function go(id) {
+  if (id !== 's-qr-claim') stopScanner();
+  if (id !== 's-qr-claim-pre') stopPreScanner();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 's-qr-claim') {
+    // Pre-fill the display with the scanned keychain ID
+    const displayId = scannedKeychainId || '—';
+    const el = document.getElementById('qr-claim-id-display');
+    if (el) el.textContent = displayId;
+    if (guest.email) {
+      const emailEl = document.getElementById('qr-email');
+      if (emailEl) emailEl.value = guest.email;
+    }
+  }
+  if (id === 's-qr-claim-pre') startPreScanner();
+}
+
+function goSetup() { go('s-setup'); }
+
+function startGuestFlow() {
+  guest = { name:'', email:'' };
+  if (!kiosk.on || !kiosk.collectInfo) { resetPlatform(); go('s-choose'); return; }
+  document.getElementById('guest-name').value = '';
+  document.getElementById('guest-email').value = '';
+  document.getElementById('lbl-email').textContent = kiosk.requireEmail ? 'Email Address *' : 'Email Address';
+  document.getElementById('btn-skip-info').style.display = kiosk.requireEmail ? 'none' : 'block';
+  go('s-guest-info');
+}
+
+function captureGuest() {
+  const name  = document.getElementById('guest-name').value.trim();
+  const email = document.getElementById('guest-email').value.trim();
+  if (!email) {
+    document.getElementById('guest-email').focus();
+    document.getElementById('guest-email').style.borderColor = '#c0392b';
+    return;
+  }
+  document.getElementById('guest-email').style.borderColor = '';
+  guest.name  = name;
+  guest.email = email;
+  resetPlatform();
+  go('s-choose');
+}
+
+function skipInfo() { guest = { name:'', email:'' }; resetPlatform(); go('s-choose'); }
+
+function resetPlatform() {
+  sel = { type:'', key:'', icon:'', input:'', url:'' };
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-to-enter').style.display = 'none';
+  document.getElementById('dest-input').value = '';
+}
+
+function launchKiosk() {
+  const name = document.getElementById('setup-name').value.trim() || 'TapLoop Activation';
+  const pin  = document.getElementById('setup-pin').value.trim();
+  if (!pin) { alert('Please set an operator PIN.'); return; }
+  kiosk = { on:true, pin, name, autoReset:document.getElementById('tog-reset').checked, showLog:document.getElementById('tog-log').checked, collectInfo:document.getElementById('tog-collect').checked, requireEmail:document.getElementById('tog-require-email').checked, enableQR:document.getElementById('tog-qr').checked, log:[], timer:null, sessionStart:new Date() };
+  document.getElementById('kiosk-bar').classList.add('on');
+  document.getElementById('kiosk-name').textContent = name;
+  document.getElementById('log-sub').textContent = name;
+  document.body.classList.add('kiosk');
+  if (kiosk.showLog) { document.getElementById('counter-badge').classList.add('on'); document.getElementById('btn-view-log').style.display = 'block'; }
+  startGuestFlow();
+}
+
+function openPinModal() { document.getElementById('pin-input').value=''; document.getElementById('pin-err').textContent=''; document.getElementById('pin-modal').classList.add('on'); setTimeout(()=>document.getElementById('pin-input').focus(),100); }
+function closePinModal() { document.getElementById('pin-modal').classList.remove('on'); }
+function submitPin() { const v=document.getElementById('pin-input').value.trim(); if(v===kiosk.pin){closePinModal();showSummaryOrClear();}else{document.getElementById('pin-err').textContent='Incorrect PIN. Try again.';document.getElementById('pin-input').value='';} }
+function showSummaryOrClear() { if(kiosk.log.length>0){buildSummary();go('s-summary');}else{clearKiosk();} }
+
+function clearKiosk() {
+  if(kiosk.timer)clearInterval(kiosk.timer);
+  kiosk={on:false,pin:'',name:'',autoReset:true,showLog:true,collectInfo:true,requireEmail:false,enableQR:true,log:[],timer:null,sessionStart:null};
+  document.getElementById('kiosk-bar').classList.remove('on');
+  document.body.classList.remove('kiosk');
+  document.getElementById('counter-badge').classList.remove('on');
+  document.getElementById('btn-view-log').style.display='none';
+  document.getElementById('btn-log-success').style.display='none';
+  document.getElementById('btn-log-success2').style.display='none';
+  document.getElementById('countdown').style.display='none';
+  go('s-welcome');
+}
+
+function pickType(el, type, key, icon) {
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.type=type; sel.key=key; sel.icon=icon;
+  document.getElementById('btn-to-enter').style.display='block';
+  const cfg=TYPES[key];
+  document.getElementById('enter-title').textContent=cfg.social?`Enter your ${type} username`:`Enter your ${type} URL`;
+  document.getElementById('enter-sub').textContent=cfg.social?"Just your username — we'll build the link for you.":'Paste or type your full link below.';
+  document.getElementById('enter-label').textContent=cfg.label;
+  document.getElementById('enter-prefix').textContent=cfg.prefix;
+  document.getElementById('dest-input').placeholder=cfg.social?'yourname':'yoursite.com';
+  document.getElementById('enter-hint').textContent=cfg.hint;
+  document.getElementById('dest-input').value='';
+}
+
+function goConfirm() {
+  const raw=document.getElementById('dest-input').value.trim();
+  if(!raw){document.getElementById('dest-input').focus();return;}
+  const cfg=TYPES[sel.key];
+  let val=raw;
+  if(cfg.social)val=val.replace(/^@/,'');
+  else val=val.replace(/^https?:\/\//i,'');
+  sel.input=cfg.social?val:raw;
+  sel.url=cfg.base+val;
+  document.getElementById('c-icon').textContent=sel.icon;
+  document.getElementById('c-type').textContent=sel.type;
+  document.getElementById('c-dest').textContent=cfg.social?val:raw;
+  document.getElementById('c-url').textContent=sel.url;
+  go('s-confirm');
+}
+
+function startTap() {
+  const badge=document.getElementById('nfc-badge');
+  if('NDEFReader' in window){badge.className='nfc-badge live';badge.textContent='NFC ready — hold keychain to back of device';document.getElementById('btn-tap').textContent='Start Programming';}
+  else{badge.className='nfc-badge';badge.textContent='Demo mode — tap button to simulate';document.getElementById('btn-tap').textContent='Tap to Program';}
+  go('s-tap');
+}
+
+async function doTap() {
+  const btn=document.getElementById('btn-tap');
+  btn.style.opacity='.5';btn.style.pointerEvents='none';
+
+  // Write the REDIRECT URL to the chip — not the destination directly.
+  // This means the chip never needs reprogramming when the customer updates their link.
+  // The redirect URL is built from the scanned/entered keychain ID, or falls back to claim page.
+  const keychainId = scannedKeychainId || null;
+  const nfcUrl = keychainId
+    ? `https://taploop-v2.vercel.app/go/${keychainId}`
+    : `https://taploop-v2.vercel.app/claim`;
+
+  if('NDEFReader' in window){
+    try{
+      const ndef=new NDEFReader();
+      document.getElementById('tap-msg').innerHTML='Hold your TapLoop steady against<br>the back of the device...';
+      await ndef.write({records:[{recordType:'url',data:nfcUrl}]});
+      showSuccess();
+    }
+    catch(e){
+      btn.style.opacity='1';btn.style.pointerEvents='auto';
+      document.getElementById('tap-msg').innerHTML=`Could not write. Make sure NFC is enabled.<br><small style="color:#8b3a35">${e.message}</small>`;
+    }
+  } else {
+    document.getElementById('tap-msg').innerHTML=`Writing redirect URL to TapLoop…<br><small style="opacity:.5">${nfcUrl}</small>`;
+    setTimeout(showSuccess,1600);
+  }
+}
+
+async function showSuccess() {
+  // Auto-generate keychain ID if not scanned
+  const keychainId = scannedKeychainId || generateKeychainId();
+  scannedKeychainId = keychainId;
+
+  // Save to log
+  if(kiosk.on&&kiosk.showLog){
+    kiosk.log.push({name:guest.name,email:guest.email,type:sel.type,icon:sel.icon,dest:sel.input,url:sel.url,time:new Date(),qrClaimed:false,keychainId});
+    document.getElementById('counter-num').textContent=kiosk.log.length;
+    refreshLog();
+  }
+
+  // Register in Supabase
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/keychains`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        id: keychainId,
+        destination_url: sel.url,
+        owner_email: guest.email || null,
+        platform_type: sel.type,
+        claimed_at: new Date().toISOString(),
+        is_claimed: true
+      })
+    });
+  } catch(e) { console.log('Supabase save failed', e); }
+
+  // Send activation email if we have their email
+  if (guest.email) {
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: guest.email,
+          keychainId,
+          destinationUrl: sel.url,
+          platformType: sel.type
+        })
+      });
+    } catch(e) { console.log('Email send failed', e); }
+  }
+
+  // Update success screen
+  document.getElementById('s-icon').textContent=sel.icon;
+  document.getElementById('s-type').textContent=sel.type;
+  document.getElementById('s-dest').textContent=sel.input;
+  document.getElementById('s-url').textContent=sel.url;
+  document.getElementById('qr-claim-section').style.display='none';
+  document.getElementById('qr-claimed-section').style.display='block';
+  document.getElementById('qr-skipped-section').style.display='none';
+  document.getElementById('qr-status-badge').textContent='✓ Active';
+  document.getElementById('qr-status-badge').className='badge-pill active';
+  document.getElementById('btn-log-success').style.display=(kiosk.on&&kiosk.showLog)?'block':'none';
+  document.getElementById('btn-log-success2').style.display=(kiosk.on&&kiosk.showLog)?'block':'none';
+  const btn=document.getElementById('btn-tap');btn.style.opacity='1';btn.style.pointerEvents='auto';
+  go('s-success');
+  if(kiosk.on&&kiosk.autoReset)startCountdown();
+}
+
+function generateKeychainId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  return 'TL-' + rand;
+}
+
+function onQRClaimed(keychainId) {
+  if(kiosk.on&&kiosk.log.length>0){kiosk.log[kiosk.log.length-1].qrClaimed=true;kiosk.log[kiosk.log.length-1].keychainId=keychainId;}
+  document.getElementById('qr-status-badge').textContent='✓ QR Active';
+  document.getElementById('qr-status-badge').className='badge-pill active';
+  document.getElementById('qr-claim-section').style.display='none';
+  document.getElementById('qr-claimed-section').style.display='block';
+  document.getElementById('qr-skipped-section').style.display='none';
+  go('s-success');
+  if(kiosk.on&&kiosk.autoReset)startCountdown();
+}
+
+function skipQR() {
+  stopScanner();
+  document.getElementById('qr-claim-section').style.display = 'none';
+  document.getElementById('qr-claimed-section').style.display = 'none';
+  document.getElementById('qr-skipped-section').style.display = 'block';
+  // Navigate back to success screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-success').classList.add('active');
+  window.scrollTo(0, 0);
+  if (kiosk.on && kiosk.autoReset) startCountdown();
+}
+
+function startCountdown() {
+  let n=6;const cd=document.getElementById('countdown');const num=document.getElementById('cd-num');
+  cd.style.display='block';num.textContent=n-1;
+  kiosk.timer=setInterval(()=>{n--;num.textContent=n-1;if(n<=1){clearInterval(kiosk.timer);kiosk.timer=null;nextGuest();}},1000);
+}
+
+function nextGuest() {
+  if(kiosk.timer){clearInterval(kiosk.timer);kiosk.timer=null;}
+  document.getElementById('countdown').style.display='none';
+  document.getElementById('qr-id-input').value='';
+  document.getElementById('qr-email').value='';
+  document.getElementById('qr-register-status').style.display='none';
+  document.getElementById('btn-register-qr').style.opacity='1';
+  document.getElementById('btn-register-qr').style.pointerEvents='auto';
+  startGuestFlow();
+}
+
+function refreshLog() {
+  const list=document.getElementById('log-list');
+  if(!kiosk.log.length){list.innerHTML='<li class="log-empty">No keychains programmed yet.</li>';return;}
+  list.innerHTML=[...kiosk.log].reverse().map((e,i)=>`<li class="log-item"><span class="log-num">#${kiosk.log.length-i}</span><span style="font-size:1.1rem">${e.icon}</span><div class="log-info"><div class="log-dest">${e.name?`<strong>${e.name}</strong> — `:''}${e.dest}</div><div class="log-type">${e.type}${e.email?' · '+e.email:''} ${e.qrClaimed?'· <span style="color:var(--gold)">QR ✓</span>':''}</div></div></li>`).join('');
+}
+
+function buildSummary() {
+  const tally={};
+  kiosk.log.forEach(e=>{if(!tally[e.type])tally[e.type]={icon:e.icon,count:0};tally[e.type].count++;});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1].count-a[1].count);
+  const top=sorted[0];
+  const qrCount=kiosk.log.filter(e=>e.qrClaimed).length;
+  const start=kiosk.sessionStart||kiosk.log[0]?.time;
+  const dur=(start&&kiosk.log.length>0)?Math.round((new Date()-start)/60000):0;
+  document.getElementById('sum-event').textContent=kiosk.name;
+  document.getElementById('sum-total').textContent=kiosk.log.length;
+  document.getElementById('sum-top').textContent=top?`${top[1].icon} ${top[0]} (${top[1].count})`:'—';
+  document.getElementById('sum-dur').textContent=dur>0?`${dur}m`:'<1m';
+  document.getElementById('sum-qr').textContent=qrCount;
+  document.getElementById('sum-breakdown').innerHTML=sorted.map(([type,d])=>`<div class="bar-row"><span class="bar-icon">${d.icon}</span><span class="bar-label">${type}</span><span class="bar-wrap"><span class="bar-fill" style="width:${Math.round(d.count/kiosk.log.length*100)}%"></span></span><span class="bar-count">${d.count}</span></div>`).join('');
+  const sumLog=document.getElementById('sum-log');
+  sumLog.innerHTML=[...kiosk.log].reverse().map((e,i)=>`<li class="log-item"><span class="log-num">#${kiosk.log.length-i}</span><span style="font-size:1.1rem">${e.icon}</span><div class="log-info"><div class="log-dest">${e.name?`<strong>${e.name}</strong> — `:''}${e.dest}</div><div class="log-type">${e.type}${e.email?' · '+e.email:''} ${e.qrClaimed?'· <span style="color:var(--gold)">QR ✓</span>':''}</div></div></li>`).join('');
+}
+
+// ── PRE-TAP QR SCANNER ──
+let preScannerStream = null;
+let preScannerInterval = null;
+
+async function startPreScanner() {
+  document.getElementById('pre-scanner-section').style.display = 'block';
+  document.getElementById('pre-scanned-result').style.display = 'none';
+  document.getElementById('pre-manual-entry').style.display = 'none';
+
+  try {
+    preScannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width:{ideal:1280}, height:{ideal:1280} }
+    });
+    const video = document.getElementById('pre-scanner-video');
+    video.srcObject = preScannerStream;
+    await video.play();
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      preScannerInterval = setInterval(async () => {
+        if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+        try {
+          const barcodes = await detector.detect(video);
+          if (barcodes.length > 0) handlePreScanned(barcodes[0].rawValue);
+        } catch(e) {}
+      }, 300);
+    } else {
+      // Load jsQR fallback
+      if (typeof jsQR === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';
+        script.onload = () => startPreCanvasScanner();
+        script.onerror = () => { stopPreScanner(); showPreManual(); };
+        document.head.appendChild(script);
+      } else {
+        startPreCanvasScanner();
+      }
+    }
+  } catch(e) {
+    stopPreScanner();
+    showPreManual();
+  }
+}
+
+function startPreCanvasScanner() {
+  const video = document.getElementById('pre-scanner-video');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  preScannerInterval = setInterval(() => {
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) handlePreScanned(code.data);
+  }, 300);
+}
+
+function handlePreScanned(raw) {
+  stopPreScanner();
+  let keychainId = null;
+  try {
+    const url = new URL(raw);
+    const parts = url.pathname.split('/');
+    const goIndex = parts.indexOf('go');
+    if (goIndex !== -1 && parts[goIndex + 1]) keychainId = parts[goIndex + 1].toUpperCase();
+  } catch(e) {
+    if (raw.toUpperCase().startsWith('TL-')) keychainId = raw.toUpperCase();
+  }
+  if (keychainId) {
+    scannedKeychainId = keychainId;
+    document.getElementById('pre-scanner-section').style.display = 'none';
+    document.getElementById('pre-scanned-id').textContent = keychainId;
+    document.getElementById('pre-scanned-result').style.display = 'block';
+  } else {
+    showPreManual();
+  }
+}
+
+function stopPreScanner() {
+  if (preScannerInterval) { clearInterval(preScannerInterval); preScannerInterval = null; }
+  if (preScannerStream) { preScannerStream.getTracks().forEach(t => t.stop()); preScannerStream = null; }
+}
+
+function resetPreScanner() {
+  scannedKeychainId = null;
+  document.getElementById('pre-scanned-result').style.display = 'none';
+  startPreScanner();
+}
+
+function showPreManual() {
+  document.getElementById('pre-scanner-section').style.display = 'none';
+  document.getElementById('pre-manual-entry').style.display = 'block';
+}
+
+function hidePreManual() {
+  document.getElementById('pre-manual-entry').style.display = 'none';
+}
+
+function confirmPreManual() {
+  const raw = document.getElementById('pre-id-input').value.trim().toUpperCase();
+  if (!raw) { alert('Please enter the keychain ID.'); return; }
+  scannedKeychainId = 'TL-' + raw.replace(/^TL-/i, '');
+  document.getElementById('pre-manual-entry').style.display = 'none';
+  document.getElementById('pre-scanned-id').textContent = scannedKeychainId;
+  document.getElementById('pre-scanner-section').style.display = 'none';
+  document.getElementById('pre-scanned-result').style.display = 'block';
+}
+
+// ── QR SCANNER ──
+let scannerStream = null;
+let scannerInterval = null;
+let scannedKeychainId = null;
+
+async function startScanner() {
+  document.getElementById('scanner-section').style.display = 'block';
+  document.getElementById('scanned-result').style.display = 'none';
+  document.getElementById('manual-entry').style.display = 'none';
+  document.getElementById('qr-email-group').style.display = 'none';
+  document.getElementById('btn-register-qr').style.display = 'none';
+  scannedKeychainId = null;
+
+  try {
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 1280 } }
+    });
+    const video = document.getElementById('scanner-video');
+    video.srcObject = scannerStream;
+    await video.play();
+
+    // Use BarcodeDetector if available, otherwise use canvas polling
+    if ('BarcodeDetector' in window) {
+      scanForQRWithDetector();
+    } else {
+      scanForQRWithCanvas();
+    }
+  } catch(e) {
+    // Camera permission denied or not available
+    stopScanner();
+    showManualEntry();
+  }
+}
+
+function scanForQRWithDetector() {
+  const video = document.getElementById('scanner-video');
+  const detector = new BarcodeDetector({ formats: ['qr_code'] });
+  scannerInterval = setInterval(async () => {
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    try {
+      const barcodes = await detector.detect(video);
+      if (barcodes.length > 0) handleScannedURL(barcodes[0].rawValue);
+    } catch(e) {}
+  }, 300);
+}
+
+function scanForQRWithCanvas() {
+  // Load jsQR as a lightweight fallback
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';
+  script.onload = () => {
+    const video = document.getElementById('scanner-video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    scannerInterval = setInterval(() => {
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code) handleScannedURL(code.data);
+    }, 300);
+  };
+  script.onerror = () => {
+    // jsQR failed to load — show manual entry
+    stopScanner();
+    showManualEntry();
+  };
+  document.head.appendChild(script);
+}
+
+function handleScannedURL(raw) {
+  stopScanner();
+  // Extract keychain ID from URL like taploop-v2.vercel.app/go/TL-A3X9K2
+  let keychainId = null;
+  try {
+    const url = new URL(raw);
+    const parts = url.pathname.split('/');
+    const goIndex = parts.indexOf('go');
+    if (goIndex !== -1 && parts[goIndex + 1]) {
+      keychainId = parts[goIndex + 1].toUpperCase();
+    }
+  } catch(e) {
+    // Not a URL — might be raw ID
+    if (raw.toUpperCase().startsWith('TL-')) {
+      keychainId = raw.toUpperCase();
+    }
+  }
+
+  if (keychainId) {
+    scannedKeychainId = keychainId;
+    document.getElementById('scanner-section').style.display = 'none';
+    document.getElementById('scanned-result').style.display = 'block';
+    document.getElementById('scanned-id-display').textContent = keychainId;
+    document.getElementById('qr-email-group').style.display = 'block';
+    document.getElementById('btn-register-qr').style.display = 'block';
+    if (guest.email) document.getElementById('qr-email').value = guest.email;
+  } else {
+    // Couldn't parse — show manual
+    showManualEntry();
+  }
+}
+
+function stopScanner() {
+  if (scannerInterval) { clearInterval(scannerInterval); scannerInterval = null; }
+  if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+}
+
+function resetScanner() {
+  scannedKeychainId = null;
+  document.getElementById('scanned-result').style.display = 'none';
+  document.getElementById('qr-email-group').style.display = 'none';
+  document.getElementById('btn-register-qr').style.display = 'none';
+  startScanner();
+}
+
+function showManualEntry() {
+  document.getElementById('scanner-section').style.display = 'none';
+  document.getElementById('manual-entry').style.display = 'block';
+  document.getElementById('qr-email-group').style.display = 'block';
+  document.getElementById('btn-register-qr').style.display = 'block';
+  if (guest.email) document.getElementById('qr-email').value = guest.email;
+}
+
+function hideManualEntry() {
+  document.getElementById('manual-entry').style.display = 'none';
+}
+
+// Scanner starts automatically when s-qr-claim screen is opened via go()
+
+// Override registerQR to use scanned ID or manual input
+async function registerQR() {
+  const manualRaw = document.getElementById('qr-id-input')?.value?.trim()?.toUpperCase() || '';
+  const keychainId = scannedKeychainId || ('TL-' + manualRaw.replace(/^TL-/i, ''));
+  const email = document.getElementById('qr-email').value.trim();
+
+  if (!keychainId || keychainId === 'TL-') { alert('Please scan or enter your keychain ID.'); return; }
+  if (!email) { alert('Please enter your email.'); return; }
+
+  const btn = document.getElementById('btn-register-qr');
+  const status = document.getElementById('qr-register-status');
+  btn.style.opacity = '.5'; btn.style.pointerEvents = 'none';
+  status.style.display = 'block'; status.textContent = 'Registering your QR code…';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/keychains`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':`Bearer ${SUPABASE_ANON_KEY}`,'Prefer':'return=representation' },
+      body: JSON.stringify({ id:keychainId, destination_url:sel.url, owner_email:email, platform_type:sel.type, claimed_at:new Date().toISOString(), is_claimed:true })
+    });
+    if (res.ok) {
+      onQRClaimed(keychainId);
+    } else {
+      const err = await res.json();
+      status.textContent = err.code === '23505' ? 'This keychain ID is already registered.' : 'Registration failed. Please try again.';
+      btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+    }
+  } catch(e) {
+    status.textContent = '⚡ Demo mode — QR registration simulated!';
+    setTimeout(() => onQRClaimed(keychainId), 800);
+  }
+}
+
+document.getElementById('tog-collect').addEventListener('change',function(){document.getElementById('row-require-email').style.display=this.checked?'flex':'none';});
+</script>
+</body>
+</html>
